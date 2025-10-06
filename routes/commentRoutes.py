@@ -13,38 +13,46 @@ def get_db():
         db.close()
 
 
-@router.post("/", response_model=schemas.PostResponse)
-def create_post(post: schemas.CommentCreate, db: Session = Depends(get_db)):
-    # Check if the owner exists
-    user = db.query(models.Users).filter(models.Users.id == post.owner_id).first()
+@router.post("/", response_model=schemas.CommentResponse)
+def addComment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
+    # Check if user exists
+    user = db.query(models.Users).filter(models.Users.id == comment.ownerId).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    new_post = models.Posts(title=post.title, content=post.content, owner_id=post.owner_id)
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
-    return new_post
-
-
-@router.get("/", response_model=list[schemas.PostResponse])
-def get_posts(db: Session = Depends(get_db)):
-    return db.query(models.Posts).all()
-
-
-@router.get("/{post_id}", response_model=schemas.PostResponse)
-def get_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Posts).filter(models.Posts.id == post_id).first()
+    # Check if post exists
+    post = db.query(models.Posts).filter(models.Posts.id == comment.postId).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    return post
 
-
-@router.delete("/{post_id}")
-def delete_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Posts).filter(models.Posts.id == post_id).first()
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found")
-    db.delete(post)
+    newComment = models.Comments(
+        comment=comment.comment,
+        ownerId=comment.ownerId,
+        postId=comment.postId,
+    )
+    db.add(newComment)
     db.commit()
-    return {"message": "Post deleted successfully"}
+    db.refresh(newComment)
+    return newComment
+
+
+@router.get("/user/{ownerId}", response_model=list[schemas.CommentResponse])
+def getUserComments(ownerId: int, db: Session = Depends(get_db)):
+    comments = db.query(models.Comments).filter(models.Comments.ownerId == ownerId).all()
+    return comments
+
+
+@router.get("/post/{postId}", response_model=list[schemas.CommentResponse])
+def getPostComments(postId: int, db: Session = Depends(get_db)):
+    comments = db.query(models.Comments).filter(models.Comments.post_id == postId).all()
+    return comments
+
+
+@router.delete("/{commentId}")
+def deleteComment(commentId: int, db: Session = Depends(get_db)):
+    comment = db.query(models.Comments).filter(models.Comments.id == commentId).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    db.delete(comment)
+    db.commit()
+    return {"message": "Comment deleted successfully"}

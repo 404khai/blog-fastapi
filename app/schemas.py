@@ -1,7 +1,8 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
-# ----- USER 
+
+# ----- USER
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
@@ -17,7 +18,7 @@ class UserResponse(BaseModel):
         orm_mode = True
 
 
-# ----- POST 
+# ----- POST
 class PostCreate(BaseModel):
     title: str
     content: str
@@ -34,19 +35,19 @@ class PostResponse(BaseModel):
         orm_mode = True
 
 
-
+# ----- COMMENT
 class CommentCreate(BaseModel):
     comment: str
-    dateCreated: datetime
     ownerId: int
+    postId: int
 
 
 class CommentResponse(BaseModel):
     id: int
-    dateCreated: datetime
     comment: str
+    dateCreated: datetime
     ownerId: int
+    postId: int
 
     class Config:
         orm_mode = True
-

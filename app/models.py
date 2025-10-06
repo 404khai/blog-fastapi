@@ -24,10 +24,10 @@ class Posts(Base):
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     ownerId = Column(Integer, ForeignKey("users.id"))
-    postId = Column(Integer, ForeignKey("posts.id"))
 
     # Relationship back to the user
     owner = relationship("Users", back_populates="posts")
+    comments = relationship("Comments", back_populates="posts")
 
 
 
@@ -38,6 +38,8 @@ class Comments(Base):
     comment = Column(String, nullable=False)
     dateCreated = Column(datetime, nullable=False)
     ownerId = Column(Integer, ForeignKey("users.id"))
+    postId = Column(Integer, ForeignKey("post.id"))
 
     # Relationship back to the user
     owner = relationship("Users", back_populates="comments")
+    post = relationship("Posts", back_populates="comments")
