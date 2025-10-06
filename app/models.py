@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
+from datetime import datetime
 
 
-class User(Base):
+class Users(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -12,16 +13,31 @@ class User(Base):
     password = Column(String, nullable=False)
 
     # 👇 Relationship: A user can have many posts
-    posts = relationship("Post", back_populates="owner")
+    posts = relationship("Posts", back_populates="owner")
+    comments = relationship("Comments", back_populates="owner")
 
 
-class Post(Base):
+class Posts(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    ownerId = Column(Integer, ForeignKey("users.id"))
+    postId = Column(Integer, ForeignKey("posts.id"))
 
     # Relationship back to the user
-    owner = relationship("User", back_populates="posts")
+    owner = relationship("Users", back_populates="posts")
+
+
+
+class Comments(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    comment = Column(String, nullable=False)
+    dateCreated = Column(datetime, nullable=False)
+    ownerId = Column(Integer, ForeignKey("users.id"))
+
+    # Relationship back to the user
+    owner = relationship("Users", back_populates="comments")
