@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app import models, database
-from routes import post_routes, user_routes
+from routes import postRoutes, userRoutes, commentRoutes
 
 
 # Create all tables at startup
@@ -19,9 +19,9 @@ app.add_middleware(
 )
 
 # routes
-app.include_router(user_routes.router)
-app.include_router(post_routes.router)
-
+app.include_router(userRoutes.router)
+app.include_router(postRoutes.router)
+app.include_router(commentRoutes.router)
 
 # Root endpoint
 @app.get("/")
