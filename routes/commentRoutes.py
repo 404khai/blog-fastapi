@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app import models, schemas, database
 
 router = APIRouter(prefix="/comments", tags=["Comments"])
@@ -12,9 +12,10 @@ def get_db():
     finally:
         db.close()
 
-#New Comment
+
+# ➕ Create a new comment
 @router.post("/new", response_model=schemas.CommentResponse)
-def addComment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
+def add_comment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     # Check if user exists
     user = db.query(models.Users).filter(models.Users.id == comment.ownerId).first()
     if not user:
@@ -25,32 +26,48 @@ def addComment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    newComment = models.Comments(
+    new_comment = models.Comments(
         comment=comment.comment,
         ownerId=comment.ownerId,
         postId=comment.postId,
     )
-    db.add(newComment)
+    db.add(new_comment)
     db.commit()
-    db.refresh(newComment)
-    return newComment
+    db.refresh(new_comment)
+    return new_comment
 
-#Get All Comments of a User
-@router.get("/{ownerId}", response_model=list[schemas.CommentResponse])
-def getUserComments(ownerId: int, db: Session = Depends(get_db)):
-    comments = db.query(models.Comments).filter(models.Comments.ownerId == ownerId).all()
+
+# 👤 Get all comments made by a specific user
+@router.get("/user/{ownerId}", response_model=list[schemas.CommentResponse])
+def get_user_comments(ownerId: int, db: Session = Depends(get_db)):
+    comments = (
+        db.query(models.Comments)
+        .options(joinedload(models.Comments.post).joinedload(models.Posts.owner))
+        .filter(models.Comments.ownerId == ownerId)
+        .all()
+    )
+    if not comments:
+        raise HTTPException(status_code=404, detail="No comments found for this user")
     return comments
 
-#Get All Comments under a Post
-@router.get("/{postId}", response_model=list[schemas.CommentResponse])
-def getPostComments(postId: int, db: Session = Depends(get_db)):
-    comments = db.query(models.Comments).filter(models.Comments.post_id == postId).all()
+
+# 🗒️ Get all comments under a specific post
+@router.get("/post/{postId}", response_model=list[schemas.CommentResponse])
+def get_post_comments(postId: int, db: Session = Depends(get_db)):
+    comments = (
+        db.query(models.Comments)
+        .options(joinedload(models.Comments.owner))
+        .filter(models.Comments.postId == postId)
+        .all()
+    )
+    if not comments:
+        raise HTTPException(status_code=404, detail="No comments found for this post")
     return comments
 
 
-#Delete a Comment
+# ❌ Delete a comment
 @router.delete("/{commentId}")
-def deleteComment(commentId: int, db: Session = Depends(get_db)):
+def delete_comment(commentId: int, db: Session = Depends(get_db)):
     comment = db.query(models.Comments).filter(models.Comments.id == commentId).first()
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")

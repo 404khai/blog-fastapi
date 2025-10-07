@@ -30,7 +30,8 @@ class PostResponse(BaseModel):
     title: str
     content: str
     ownerId: int
-
+    owner: Optional[UserResponse] = None  # 👈 include user info
+    
     class Config:
         orm_mode = True
 
@@ -48,6 +49,8 @@ class CommentResponse(BaseModel):
     dateCreated: datetime
     ownerId: int
     postId: int
+    owner: Optional[UserResponse] = None   # 👈 comment author info
+    post: Optional[PostResponse] = None    # 👈 the post info (includes title + owner)
 
     class Config:
         orm_mode = True
