@@ -37,6 +37,7 @@ def add_comment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     return new_comment
 
 
+
 # 👤 Get all comments made by a specific user
 @router.get("/user/{ownerId}", response_model=list[schemas.CommentResponse])
 def get_user_comments(ownerId: int, db: Session = Depends(get_db)):
@@ -51,18 +52,19 @@ def get_user_comments(ownerId: int, db: Session = Depends(get_db)):
     return comments
 
 
-# 🗒️ Get all comments under a specific post
+
+#Get ALL Comments under a specific post
 @router.get("/post/{postId}", response_model=list[schemas.CommentResponse])
 def get_post_comments(postId: int, db: Session = Depends(get_db)):
     comments = (
         db.query(models.Comments)
-        .options(joinedload(models.Comments.owner))
         .filter(models.Comments.postId == postId)
         .all()
     )
     if not comments:
         raise HTTPException(status_code=404, detail="No comments found for this post")
     return comments
+
 
 
 # ❌ Delete a comment
