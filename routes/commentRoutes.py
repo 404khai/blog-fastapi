@@ -12,8 +12,8 @@ def get_db():
     finally:
         db.close()
 
-
-@router.post("/", response_model=schemas.CommentResponse)
+#New Comment
+@router.post("/new", response_model=schemas.CommentResponse)
 def addComment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     # Check if user exists
     user = db.query(models.Users).filter(models.Users.id == comment.ownerId).first()
@@ -35,19 +35,20 @@ def addComment(comment: schemas.CommentCreate, db: Session = Depends(get_db)):
     db.refresh(newComment)
     return newComment
 
-
-@router.get("/user/{ownerId}", response_model=list[schemas.CommentResponse])
+#Get All Comments of a User
+@router.get("/{ownerId}", response_model=list[schemas.CommentResponse])
 def getUserComments(ownerId: int, db: Session = Depends(get_db)):
     comments = db.query(models.Comments).filter(models.Comments.ownerId == ownerId).all()
     return comments
 
-
-@router.get("/post/{postId}", response_model=list[schemas.CommentResponse])
+#Get All Comments under a Post
+@router.get("/{postId}", response_model=list[schemas.CommentResponse])
 def getPostComments(postId: int, db: Session = Depends(get_db)):
     comments = db.query(models.Comments).filter(models.Comments.post_id == postId).all()
     return comments
 
 
+#Delete a Comment
 @router.delete("/{commentId}")
 def deleteComment(commentId: int, db: Session = Depends(get_db)):
     comment = db.query(models.Comments).filter(models.Comments.id == commentId).first()

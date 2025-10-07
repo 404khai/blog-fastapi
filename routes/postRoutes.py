@@ -13,36 +13,49 @@ def get_db():
         db.close()
 
 
-@router.post("/", response_model=schemas.PostResponse)
+@router.post("/new", response_model=schemas.PostResponse)
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # Check if the owner exists
-    user = db.query(models.Users).filter(models.Users.id == post.owner_id).first()
+    user = db.query(models.Users).filter(models.Users.id == post.ownerId).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    new_post = models.Posts(title=post.title, content=post.content, owner_id=post.owner_id)
+    new_post = models.Posts(title=post.title, content=post.content, ownerId=post.ownerId)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
     return new_post
 
-
-@router.get("/", response_model=list[schemas.PostResponse])
+#get All posts
+@router.get("/all", response_model=list[schemas.PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     return db.query(models.Posts).all()
 
 
-@router.get("/{post_id}", response_model=schemas.PostResponse)
-def get_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Posts).filter(models.Posts.id == post_id).first()
+# Get all posts of a specific user
+@router.get("/{ownerId}/posts", response_model=list[schemas.PostResponse])
+def get_user_posts(ownerId: int, db: Session = Depends(get_db)):
+    # Check if user exists
+    user = db.query(models.Users).filter(models.Users.id == ownerId).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch all posts belonging to that user
+    posts = db.query(models.Posts).filter(models.Posts.ownerId == ownerId).all()
+    return posts
+
+
+@router.get("/{postId}", response_model=schemas.PostResponse)
+def get_post(postId: int, db: Session = Depends(get_db)):
+    post = db.query(models.Posts).filter(models.Posts.id == postId).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     return post
 
 
-@router.delete("/{post_id}")
-def delete_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Posts).filter(models.Posts.id == post_id).first()
+@router.delete("/{postId}")
+def delete_post(postId: int, db: Session = Depends(get_db)):
+    post = db.query(models.Posts).filter(models.Posts.id == postId).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     db.delete(post)

@@ -15,7 +15,7 @@ def get_db():
         db.close()
 
 
-@router.post("/", response_model=schemas.UserResponse)
+@router.post("/new", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(models.Users).filter(models.Users.email == user.email).first()
     if db_user:
@@ -28,7 +28,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.get("/", response_model=list[schemas.UserResponse])
+@router.get("/all", response_model=list[schemas.UserResponse])
 def get_users(db: Session = Depends(get_db)):
     return db.query(models.Users).all()
 
