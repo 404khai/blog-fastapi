@@ -12,7 +12,7 @@ def get_db():
     finally:
         db.close()
 
-
+#Create Post
 @router.post("/new", response_model=schemas.PostResponse)
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # Check if the owner exists
@@ -26,9 +26,9 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     db.refresh(new_post)
     return new_post
 
-#get All posts
+#Get All posts
 @router.get("/all", response_model=list[schemas.PostResponse])
-def get_posts(db: Session = Depends(get_db)):
+def getAllPosts(db: Session = Depends(get_db)):
     return db.query(models.Posts).all()
 
 
@@ -47,6 +47,7 @@ def get_user_posts(ownerId: int, db: Session = Depends(get_db)):
 
 @router.get("/{postId}", response_model=schemas.PostResponse)
 def get_post(postId: int, db: Session = Depends(get_db)):
+    #Does post exist
     post = db.query(models.Posts).filter(models.Posts.id == postId).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")

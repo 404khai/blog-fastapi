@@ -39,3 +39,4 @@ class Comments(Base):
 
     owner = relationship("Users", back_populates="comments")
     post = relationship("Posts", back_populates="comments")
+

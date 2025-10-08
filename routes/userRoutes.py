@@ -33,17 +33,18 @@ def get_users(db: Session = Depends(get_db)):
     return db.query(models.Users).all()
 
 
-@router.get("/{user_id}", response_model=schemas.UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+#Get a specific user
+@router.get("/{userId}", response_model=schemas.UserResponse)
+def get_user(userId: int, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.id == userId).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
-@router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.Users).filter(models.Users.id == user_id).first()
+@router.delete("/{userId}")
+def delete_user(userId: int, db: Session = Depends(get_db)):
+    user = db.query(models.Users).filter(models.Users.id == userId).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)

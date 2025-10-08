@@ -49,6 +49,6 @@ class CommentResponse(BaseModel):
     dateCreated: datetime
     ownerId: int
     postId: int
-
+    owner:Optional[UserResponse] = None
     class Config:
         orm_mode = True
